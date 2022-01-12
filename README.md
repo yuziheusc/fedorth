@@ -7,7 +7,7 @@ Then fedrate learning model is trained using the preprocessed features. It is en
 
 Data is stored in .npz format. Data dir contains `n_split` sub dirs. Each dir is the data for a certain split. In each split dir, there are `n_clients` training data files (data/split_001/client_001.npz) for each client and also validation (data/split_001/valid.npz) and (data/split_001/test.npz). For each of the data .npz file, the features are stored in filed 'x', labels are in 'y' and sensitive attributes are in 'z'.
 
-Tools to create splits of data can be found in `flsplits.py`.
+Tools to create splits of data can be found in `flsplits.py`. Size and data balance of sensitive attribute can be changed here. 
 
 #### Create a simple fedrate learning model
 
