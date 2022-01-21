@@ -62,7 +62,7 @@ def avg_res_disc(path, z_col, label="None", marker=None):
 
 # #code example
 # avg_res_corr("../new_adult_income_mlp_h1_single.pkl", 1, label="MLP")
-# # ... here, plot multiple of data file ...
+# # ... here, plot multiple data files ...
 # # Add your own code for label, legend, title and savefig.
 # # For best results, use in jupyter notebooks.
     

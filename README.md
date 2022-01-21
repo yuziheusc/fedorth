@@ -22,3 +22,13 @@ If you want to do experiments on a dataset with multiple splits,
 ```python
 fedproj.run_on_data(data_folder, res_path_i, 103, n_batch=batch_i, layers=layers_i, n_alpha=2, global_epoch=global_epoch_i, local_epoch=local_epoch_i, decay=decay_i)
 ```
+
+#### Vis and plot
+
+After results are collected, use tools in visplot.py to plot the curve showing bias vs. acc tradeoff. Only Pearson correlation and discrimination (abs diff in positive rate) supported sofar. For best results, use in jupyter notebooks. Examples of code:
+
+```python
+avg_res_corr("../new_adult_income_mlp_h1_single.pkl", 1, label="MLP")
+# ... here, plot multiple data files ...
+# Add your own code for label, legend, title and savefig.
+```
