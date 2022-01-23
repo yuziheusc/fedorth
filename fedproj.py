@@ -197,11 +197,24 @@ class FlServer:
     
     known_loss_fun = {"mse":nn.MSELoss(), "cross_entropy":nn.CrossEntropyLoss()}
     
-    def __init__(self, indim, oudim, layer_sizes, ou_activation="none", dropout_ratio=None, loss="mse", verbos=False):
+    def __init__(self, indim, oudim, layer_sizes, ou_activation="none", dropout_ratio=None, loss="mse", ifgpu=True, verbos=False):
         self.model = Net_fc(indim, layer_sizes+[oudim], ou_activation=ou_activation, dropout_ratio=dropout_ratio, verbos=verbos)
         self.param_keys = self.model.state_dict().keys()
         self.loss = self.known_loss_fun[loss]
-        
+
+        self.ifgpu = ifgpu
+
+        if self.ifgpu:
+            self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            if torch.cuda.device_count() > 1:
+                print("Let's use", torch.cuda.device_count(), "GPUs!")
+                self.model = nn.DataParallel(self.model)
+        else:
+            self.device = torch.device("cpu")
+
+
+        print(f"Server: Device = {self.device}")
+        self.model.to(self.device)
         
     def get_central_param(self):
         return self.model.state_dict()
@@ -232,17 +245,22 @@ class FlServer:
         zs = None
         for i, data in enumerate(loader, 0):
             X, y, z = data   
+
+            X = X.to(self.device)
+            y = y.to(self.device)
+            z = z.to(self.device)
+
             y_pred = self.model.forward(X)
 
-            preds = np.append(preds, y_pred.detach().numpy()[:,1])
-            labels = np.append(labels, y.detach().numpy())
+            preds = np.append(preds, y_pred.cpu().detach().numpy()[:,1])
+            labels = np.append(labels, y.cpu().detach().numpy())
             
             z = z.reshape((z.shape[0], -1))
 
             if(zs is None):
-                zs = z.detach().numpy()
+                zs = z.cpu().detach().numpy()
             else:
-                zs = np.vstack((zs, z.detach().numpy()))
+                zs = np.vstack((zs, z.cpu().detach().numpy()))
 
         res = {}
         res["log_loss"] = metrics.log_loss(labels, preds)
@@ -274,7 +292,7 @@ class FlClient:
 
     known_loss_fun = {"mse":nn.MSELoss(), "cross_entropy":nn.CrossEntropyLoss()}
     
-    def __init__(self,indim, oudim, layer_sizes, ou_activation="none", dropout_ratio=None, decay=1e-4, loss="mse", verbos=False):
+    def __init__(self,indim, oudim, layer_sizes, ou_activation="none", dropout_ratio=None, decay=1e-4, loss="mse", ifgpu=True, verbos=False):
         self.model = Net_fc(indim, layer_sizes+[oudim], ou_activation=ou_activation, dropout_ratio=dropout_ratio, verbos=verbos)
         
         self.loss_fun = self.known_loss_fun[loss]
@@ -286,6 +304,20 @@ class FlClient:
         self.max_nochange=10
         
         self.decay = decay
+
+        self.ifgpu = ifgpu
+
+        if self.ifgpu:
+            self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            if torch.cuda.device_count() > 1:
+                print("Let's use", torch.cuda.device_count(), "GPUs!")
+                self.model = nn.DataParallel(self.model)
+        else:
+            self.device = torch.device("cpu")
+
+        print(f"Client: Device = {self.device}")
+        self.model.to(self.device)
+
         #self.n_batch = 8
         #self.n_epoch = 8
     
@@ -327,10 +359,17 @@ class FlClient:
         loss_list_train = []
         
         n_nochange = 0
+
         for i_epoch in range(n_epoch):
             loss_tmp_train = []
             for i, data in enumerate(train_loader, 0):
+
                 X, y, z = data
+
+                X = X.to(self.device)
+                y = y.to(self.device)
+                z = z.to(self.device)
+
                 y_pred = self.model.forward(X)
             
                 loss_net = self.loss_fun(y_pred, y)
@@ -342,7 +381,7 @@ class FlClient:
                 if i_epoch == 0:
                     self.weight += X.shape[0]
 
-                loss_tmp_train.append(loss_net.detach().numpy())
+                loss_tmp_train.append(loss_net.cpu().detach().numpy())
                 
             loss_list_train.append(np.mean(loss_tmp_train))
             
@@ -387,9 +426,14 @@ class FlClient:
         loss_list = []
         for i, data in enumerate(loader, 0):
             X, y, z = data
+
+            X = X.to(self.device)
+            y = y.to(self.device)
+            z = z.to(self.device)
+
             y_pred = self.model.forward(X)
 
-            loss_net = self.loss_fun(y_pred, y).detach().numpy()
+            loss_net = self.loss_fun(y_pred, y).cpu().detach().numpy()
             # loss_tot = loss_net
 
             loss_list.append(loss_net)
@@ -460,13 +504,14 @@ class SyncFl:
             
         
     
-    def __init__(self, folder, x_dim, layers=[64], c=1.0, alpha_proj=1.0, decay=1e-4, n_batch=32, mp=False):
+    def __init__(self, folder, x_dim, layers=[64], c=1.0, alpha_proj=1.0, decay=1e-4, n_batch=32, mp=False, ifgpu=True):
         self.x_dim = x_dim
         self.layers = layers
         self.c = c
         self.alpha_proj = alpha_proj
         self.n_batch = n_batch
         self.mp = mp
+        self.ifgpu = ifgpu
         
         ## estimate fair projection param
         self.param_proj = fed_estimate_proj_param(folder)
@@ -493,11 +538,11 @@ class SyncFl:
         self.test_loader = self.make_loader(path_test)
         
         ##---- 2. create server and clients
-        self.server = FlServer(self.x_dim, 2, layers, ou_activation="softmax", loss="cross_entropy", verbos=False)
+        self.server = FlServer(self.x_dim, 2, layers, ou_activation="softmax", loss="cross_entropy", ifgpu=self.ifgpu, verbos=False)
         
         self.client_list = []
         for i in range(self.n_client):
-            client_i = FlClient(self.x_dim, 2, layers, ou_activation="softmax", loss="cross_entropy", decay=decay, verbos=False)
+            client_i = FlClient(self.x_dim, 2, layers, ou_activation="softmax", loss="cross_entropy", decay=decay, ifgpu=self.ifgpu, verbos=False)
             self.client_list.append(client_i)
             
     def fake_job(self):

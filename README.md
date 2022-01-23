@@ -32,3 +32,8 @@ avg_res_corr("../new_adult_income_mlp_h1_single.pkl", 1, label="MLP")
 # ... here, plot multiple data files ...
 # Add your own code for label, legend, title and savefig.
 ```
+
+
+#### Recent update
+
+2022.01.22 ---- Add GPU support
