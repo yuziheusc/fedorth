@@ -16,9 +16,10 @@ import glob
 def process_csv(path):
     df = pd.read_csv(path)
     features = [c for c in df if c.startswith('x')]
+    sensitive_features = [c for c in df if c.startswith('s')]
     x = df[features].values
     y = df['y'].values
-    z = df['s'].values
+    z = df[sensitive_features].values
     
     return x, y, z
 
