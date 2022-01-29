@@ -672,9 +672,9 @@ def run_on_data(data_folder, res_path, x_dim, n_split=5, n_alpha=21, n_batch=16,
     print(f"**** Task complete! ****")
 
 
-## example of calling
-if __name__ == "__main__":
-    run_on_data("../../../datasets/fl_compas_trans", "../../compas_mlp_try_script.pkl", 8, n_alpha=5, global_epoch=1, local_epoch=1)
+# ## example of calling
+# if __name__ == "__main__":
+#     run_on_data("../../../datasets/fl_compas_trans", "../../compas_mlp_try_script.pkl", 8, n_alpha=5, global_epoch=1, local_epoch=1)
 
 
 # ## COMPAS
