@@ -628,7 +628,7 @@ def run_on_data(data_folder, res_path, x_dim, n_split=5, n_alpha=21, n_batch=16,
     print(f"  Training on folder [{data_folder}], n_split = {n_split}")
     print(f"  Save to [{res_path}]")
     print(f"  input dim = {x_dim}, n_alpha = {n_alpha}")
-    print(f"  n_batch = {n_batch}, layers = {layers}, global_epoch = {global_epoch}, local_epoch = {local_epoch}")
+    print(f"  n_batch = {n_batch}, layers = {layers}, global_epoch = {global_epoch}, local_epoch = {local_epoch}, decay = {decay}")
     print(f"  skip = {skip}")
 
     if(skip):
