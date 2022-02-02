@@ -402,18 +402,18 @@ class FlClient:
                     print(f"Early stopping {i_epoch:3d} epoches. ", end = "")
                     break    
                 
-            else:
-                if(len(loss_list_train)>=3):
-                    #if(loss_list_train[-1]-loss_list_train[-2]<-self.tol*abs(loss_list_train[-2])):
-                    if(loss_list_train[-1]-np.min(loss_list_train[:-1])<-self.tol*abs(np.min(loss_list_train[:-1]))):
-                        n_nochange = 0
-                    else:
-                        n_nochange += 1
+            # else:
+            #     if(len(loss_list_train)>=3):
+            #         #if(loss_list_train[-1]-loss_list_train[-2]<-self.tol*abs(loss_list_train[-2])):
+            #         if(loss_list_train[-1]-np.min(loss_list_train[:-1])<-self.tol*abs(np.min(loss_list_train[:-1]))):
+            #             n_nochange = 0
+            #         else:
+            #             n_nochange += 1
                         
-                # print(f"loss_list_train = {loss_list_train}, n_nochange={n_nochange}")
-                if(n_nochange > self.max_nochange): 
-                    print(f"Early stopping {i_epoch:3d} epoches. ", end = "")
-                    break
+            #     # print(f"loss_list_train = {loss_list_train}, n_nochange={n_nochange}")
+            #     if(n_nochange > self.max_nochange): 
+            #         print(f"Early stopping {i_epoch:3d} epoches. ", end = "")
+            #         break
 
 #         ## debug 
 #         print("ending param")
