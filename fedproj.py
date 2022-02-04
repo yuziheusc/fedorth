@@ -636,8 +636,7 @@ def run_on_data(data_folder, res_path, x_dim, n_split=5, n_alpha=21, n_batch=16,
             print(f"**** Skip! ****")
             return
 
-    alpha_list = np.linspace(0.0, 1.0, n_alpha)[::-1]
-    
+    alpha_list = np.linspace(1.0, 0.0, n_alpha)    
     res_list = []
     valid_res_list = []
 
