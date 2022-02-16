@@ -623,7 +623,9 @@ class SyncFl:
         return self.test(self.test_loader)
 
 
-def run_on_data(data_folder, res_path, x_dim, n_split=5, n_alpha=21, n_batch=16, layers=[64], global_epoch=8, local_epoch=4, decay=1e-4, skip=True):
+def run_on_data(data_folder, res_path, x_dim, n_split=5, n_alpha=21, n_batch=16, \
+        layers=[64], global_epoch=8, local_epoch=4, decay=1e-4, skip=True, ord_res=True):
+
     print(f"**** Task start ****")
     print(f"  Training on folder [{data_folder}], n_split = {n_split}")
     print(f"  Save to [{res_path}]")
@@ -636,7 +638,11 @@ def run_on_data(data_folder, res_path, x_dim, n_split=5, n_alpha=21, n_batch=16,
             print(f"**** Skip! ****")
             return
 
-    alpha_list = np.linspace(1.0, 0.0, n_alpha)    
+    if ord_res:
+        alpha_list = np.linspace(1.0, 0.0, n_alpha)
+    else:
+        alpha_list = np.linspace(0.0, 1.0, n_alpha)
+
     res_list = []
     valid_res_list = []
 
